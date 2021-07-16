@@ -76,20 +76,27 @@ exports.deleteSauce = (req, res, next) => {
             break;
 
             case 0:
+             
               Sauce.findOne({ _id: req.params.id })
               .then(sauce => {
+              if (sauce.usersLiked.find( user => user === req.body.userId)) {  // on cherche si l'utilisateur est déjà dans le tableau usersLiked
                 Sauce.updateOne( 
                     {_id: req.params.id},
                     {$pull: { usersLiked: req.body.userId }, $inc: { likes: -1 }},                    
                 )
-
+                .then(() => { res.status(201).json({ message: "vote retiré" }); })
+                .catch((error) => { res.status(400).json({error}); });
+              }
+             
+              if (sauce.usersDisliked.find(user => user === req.body.userId)) { 
                 Sauce.updateOne( 
                     {_id: req.params.id},
                     {$pull: { usersDisliked: req.body.userId }, $inc: { dislikes: -1 }},                    
                 )
 
-                .then(() => { res.status(201).json({ message: "vote retiré." }); })
+                .then(() => { res.status(201).json({ message: "vote retiré" }); })
                 .catch((error) => { res.status(400).json({error}); });
+                }
               })
               .catch((error) => { res.status(404).json({error}); });
               break;

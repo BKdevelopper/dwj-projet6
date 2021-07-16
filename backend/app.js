@@ -4,9 +4,15 @@ const mongoose = require('mongoose');
 const sauceRoute = require('./route/sauce')
 const userRoutes = require('./route/user');
 const path = require('path')
-const app = express();
 const dotenv = require('dotenv').config();
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const app = express();
 
+const reqLimiter = rateLimit ( { 
+  windowMs : 15 * 60 * 1000 ,  // 15 minutes 
+  max : 15 // nb essaie 15
+});
 
 mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`,
 {   
@@ -26,6 +32,10 @@ app.use((req, res, next) => {
     next();
   });
 
+
+
+app.use("/api/auth/login", reqLimiter);
+app.use(helmet());
 app.use(bodyParser.json());
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
