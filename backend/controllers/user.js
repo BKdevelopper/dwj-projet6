@@ -29,8 +29,11 @@ exports.signup = (req, res, next) => {
 };
 
 
-exports.login = (req, res, next) => {
-    User.findOne({ email: req.body.email })
+
+  exports.login = (req, res, next) => {
+    const encrypt = new User({ email: req.body.email })
+    encrypt.encryptFieldsSync();
+    User.findOne({ email: encrypt.email })
       .then(user => {
         if (!user) {
           return res.status(401).json({ error: 'Utilisateur non trouvé !' });
